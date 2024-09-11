@@ -243,6 +243,8 @@ class WhoisEntry(dict):
             return WhoisBr(domain, text)
         elif domain.endswith('.eu'):
             return WhoisEu(domain, text)
+        elif domain.endswith('.edu'):
+            return WhoisEdu(domain, text)
         elif domain.endswith('.ee'):
             return WhoisEe(domain, text)
         elif domain.endswith('.kr'):
@@ -966,6 +968,29 @@ class WhoisAU(WhoisEntry):
             raise PywhoisError(text)
         else:
             WhoisEntry.__init__(self, domain, text, self.regex)
+
+
+class WhoisEdu(WhoisEntry):
+    """Whois parser for .edu domains
+    """
+    regex = {
+        'domain_name':      r'Domain Name: *(.+)',
+        'registrar':        r'Registrar: *(.+)',
+        'whois_server':     r'Whois Server: *(.+)',  # empty usually
+        'referral_url':     r'Referral URL: *(.+)',  # http url of whois_server: empty usually
+        'updated_date':     r'Domain record last updated: *(.+)',
+        'creation_date':    r'Domain record activated: *(.+)',
+        'expiration_date':  r'Domain expires: *(.+)',
+        'name_servers':     r'Name servers:\n *([\n\S\s]+)',  # list of name servers
+        'status':           r'Status: *(.+)',  # list of statuses
+        'emails':           EMAIL_REGEX,  # list of email addresses
+    }
+
+    def __init__(self, domain, text):
+        if text.strip().startswith('NO MATCH'):
+            raise PywhoisError(text)
+        else:
+            WhoisEntry.__init__(self, domain, text)
 
 
 class WhoisEu(WhoisEntry):
